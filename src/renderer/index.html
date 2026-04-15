@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VParts</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="theme-dark">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../assets/yv-logo.png" class="logo" alt="logo" />
+        <div>
+          <h1>VParts</h1>
+          <p>Yair Vahaba System</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">תצוגה</div>
+        <div class="stack">
+          <button class="btn btn-primary" id="themeToggleBtn">החלף Theme</button>
+          <button class="btn btn-secondary" id="newWorkspaceBtn">חדש</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">מסמך</div>
+        <label class="file-button">
+          <input type="file" id="pdfFile" accept="application/pdf" />
+          <span>טען PDF</span>
+        </label>
+        <label class="file-button secondary">
+          <input type="file" id="imageFile" accept="image/*" />
+          <span>או טען תמונה</span>
+        </label>
+      </div>
+
+      <div class="section">
+        <div class="section-title">פענוח</div>
+        <div class="stack">
+          <button class="btn btn-primary" id="parseCurrentPageBtn">זהה עמוד נוכחי</button>
+          <button class="btn btn-secondary" id="parseAllPagesBtn">זהה כל העמודים</button>
+          <button class="btn btn-secondary" id="dedupePartsBtn">נקה כפילויות</button>
+        </div>
+        <p class="helper">גלגלת מעל PDF = מעבר עמודים. Ctrl + גלגלת = זום. ALT = זכוכית מגדלת.</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">קטלוגים שמורים</div>
+        <div class="sidebar-list" id="catalogsList"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">הזמנות שמורות</div>
+        <div class="sidebar-list" id="ordersList"></div>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Workspace</div>
+          <h2 id="workspaceTitle">קטלוג חדש</h2>
+          <div class="status-inline" id="statusText">מוכן לעבודה</div>
+        </div>
+
+        <div class="topbar-actions">
+          <select id="partsScopeSelect" class="input compact">
+            <option value="current">רק לעמוד הנוכחי</option>
+            <option value="all">כל העמודים</option>
+          </select>
+          <button class="btn btn-secondary" id="saveCatalogBtn">שמור קטלוג</button>
+        </div>
+      </header>
+
+      <section class="main-grid">
+        <div class="panel viewer-panel">
+          <div class="panel-header">
+            <div>
+              <h3>מסמך אינטראקטיבי</h3>
+              <p id="documentInfo">טרם נטען מסמך</p>
+            </div>
+            <div class="toolbar wrap">
+              <button class="btn btn-secondary" id="prevPageBtn">עמוד קודם</button>
+              <button class="btn btn-secondary" id="nextPageBtn">עמוד הבא</button>
+              <button class="btn btn-secondary" id="zoomOutBtn">−</button>
+              <button class="btn btn-secondary" id="zoomResetBtn">100%</button>
+              <button class="btn btn-secondary" id="zoomInBtn">+</button>
+              <button class="btn btn-secondary" id="fitViewBtn">חזרה לראש</button>
+              <button class="btn btn-primary" id="addHotspotModeBtn">הוסף נקודה</button>
+            </div>
+          </div>
+
+          <div class="viewer-stage" id="viewerStage">
+            <img id="documentImage" alt="document" />
+            <canvas id="pdfCanvas"></canvas>
+            <div id="pdfMagnifier" class="magnifier hidden">
+              <canvas id="magnifierCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel parts-panel">
+          <div class="panel-header">
+            <div>
+              <h3>חלקים</h3>
+              <p>הרשימה מתעדכנת לפי עמוד או לכל המסמך</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn btn-secondary" id="clearHotspotsBtn">נקה נקודות</button>
+            </div>
+          </div>
+
+          <div class="input-grid">
+            <div>
+              <label>כותרת קטלוג</label>
+              <input class="input" id="catalogNameInput" placeholder="לדוגמה: ATM 6622 Front Panel" />
+            </div>
+            <div>
+              <label>בחר חלק לנקודה</label>
+              <select class="input" id="hotspotPartSelect"></select>
+            </div>
+          </div>
+
+          <textarea class="input textarea" id="partsJson" placeholder="כאן תופיע רשימת החלקים כ-JSON"></textarea>
+          <div class="toolbar">
+            <button class="btn btn-secondary" id="loadPartsBtn">טען רשימה מהטקסט</button>
+          </div>
+
+          <div class="selected-card" id="selectedPartCard">
+            <div><strong>חלק נבחר:</strong> טרם נבחר</div>
+            <div><strong>עמוד:</strong> -</div>
+            <div><strong>PN:</strong> -</div>
+            <div><strong>תיאור:</strong> -</div>
+          </div>
+
+          <div class="parts-list" id="partsList"></div>
+        </div>
+
+        <div class="panel order-panel">
+          <div class="panel-header">
+            <div>
+              <h3>הזמנה</h3>
+              <p>PN, שם חלק, כמות, דחיפות, הערה</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn btn-primary" id="saveOrderBtn">שמור הזמנה</button>
+            </div>
+          </div>
+
+          <div class="input-grid">
+            <div>
+              <label>מספר הזמנה</label>
+              <input class="input" id="orderNumberInput" />
+            </div>
+            <div>
+              <label>תאריך הזמנה</label>
+              <input class="input" id="orderDateInput" type="date" />
+            </div>
+            <div>
+              <label>שם המזמין</label>
+              <input class="input" id="requesterInput" />
+            </div>
+            <div>
+              <label>מחלקה</label>
+              <div class="inline-add">
+                <select class="input" id="departmentInput"></select>
+                <button class="btn btn-secondary btn-small" id="addDepartmentBtn">+</button>
+              </div>
+            </div>
+            <div>
+              <label>מכשיר / דגם</label>
+              <input class="input" id="machineNameInput" />
+            </div>
+            <div>
+              <label>מייל ספק</label>
+              <input class="input" id="supplierEmailInput" />
+            </div>
+          </div>
+
+          <label>הערות כלליות</label>
+          <textarea class="input textarea small" id="generalNotesInput"></textarea>
+
+          <div class="order-add-box">
+            <div class="input-grid three">
+              <div>
+                <label>כמות</label>
+                <input class="input" id="lineQtyInput" type="number" min="1" value="1" />
+              </div>
+              <div>
+                <label>דחיפות</label>
+                <select class="input" id="lineUrgencyInput">
+                  <option>רגיל</option>
+                  <option>דחוף</option>
+                  <option>קריטי</option>
+                </select>
+              </div>
+              <div>
+                <label>הערה לשורה</label>
+                <input class="input" id="lineNotesInput" placeholder="לדוגמה: שבור / שרוט / חסר במלאי" />
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <button class="btn btn-primary" id="addLineBtn">הוסף להזמנה</button>
+              <button class="btn btn-secondary" id="removeSelectedHotspotBtn">מחק נקודת חלק</button>
+            </div>
+          </div>
+
+          <div class="toolbar wrap">
+            <button class="btn btn-success" id="printOrderBtn">הדפס</button>
+            <button class="btn btn-secondary" id="emailOrderBtn">שלח במייל</button>
+            <button class="btn btn-secondary" id="exportOrderBtn">ייצא TXT</button>
+            <button class="btn btn-danger" id="clearOrderBtn">נקה הזמנה</button>
+          </div>
+
+          <div class="order-lines" id="orderLines"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="print-root" id="printRoot"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="./renderer.js"></script>
+</body>
+</html>

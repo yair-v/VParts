@@ -1,0 +1,21 @@
+{
+  "name": "vparts-full-build",
+  "version": "5.0.0",
+  "description": "VParts full build - Electron + Node + SQLite",
+  "main": "src/main.js",
+  "author": "Yair Vahaba",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+    "start": "electron .",
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
+    "rebuild": "electron-rebuild -f -w better-sqlite3"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.9.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.3",
+    "electron": "^41.2.0"
+  }
+}
