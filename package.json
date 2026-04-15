@@ -6,13 +6,14 @@
   "author": "Yair Vahaba",
   "license": "MIT",
   "scripts": {
-    "start": "node server.js"
-    "start": "electron .",
+    "start": "node server.js",
+    "electron": "electron .",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
     "rebuild": "electron-rebuild -f -w better-sqlite3"
   },
   "dependencies": {
-    "better-sqlite3": "^12.9.0"
+    "better-sqlite3": "^12.9.0",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.3",
